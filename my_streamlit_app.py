@@ -31,16 +31,20 @@ def main():
             # Load the dataset
             df = pd.read_csv(uploaded_file)
 
-            # Make predictions for each text in the dataset
-            predictions = [classifier(text) for text in df['text']]
+            # Check if 'text' column exists
+            if 'text' not in df.columns:
+                st.error("The 'text' column is missing in the dataset.")
+            else:
+                # Make predictions for each text in the dataset
+                predictions = [classifier(text) for text in df['text']]
 
-            # Display overall results
-            st.write("Overall Results:")
-            for i, prediction in enumerate(predictions):
-                st.write(f"Row {i + 1}:")
-                st.write(f"Label: {prediction[0]['label']}")
-                st.write(f"Score: {prediction[0]['score']:.4f}")
-                st.write("---")
+                # Display overall results
+                st.write("Overall Results:")
+                for i, prediction in enumerate(predictions):
+                    st.write(f"Row {i + 1}:")
+                    st.write(f"Label: {prediction[0]['label']}")
+                    st.write(f"Score: {prediction[0]['score']:.4f}")
+                    st.write("---")
 
 if __name__ == "__main__":
     main()
