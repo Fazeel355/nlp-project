@@ -12,6 +12,9 @@ def main():
     # File upload
     uploaded_file = st.file_uploader("Upload a file", type=["csv", "xlsx"])
 
+    # Input text area
+    user_text_input = st.text_area("Enter your text here:", "Type your text here...")
+
     if uploaded_file is not None:
         try:
             # Determine file type and load the dataset
@@ -38,19 +41,27 @@ def main():
 
             # Display overall results
             st.write("Overall Results:")
-            avg_score = sum(prediction[0]['score'] for prediction in predictions) / len(predictions)
-            st.write(f"Average Sentiment Score: {avg_score:.4f}")
-            st.write("---")
+            for i, prediction in enumerate(predictions):
+                st.write(f"Row {i + 1}:")
+                st.write(f"Label: {prediction[0]['label']}")
+                st.write(f"Score: {prediction[0]['score']:.4f}")
+                st.write("---")
 
-    # Input text area for user
-    user_input = st.text_area("Enter your text here:", "Type your text here...")
+            # Calculate average sentiment scores
+            avg_positive_score = sum(prediction[0]['score'] for prediction in predictions if prediction[0]['label'] == 'POSITIVE') / len(predictions)
+            avg_negative_score = sum(prediction[0]['score'] for prediction in predictions if prediction[0]['label'] == 'NEGATIVE') / len(predictions)
 
-    # Button to get sentiment prediction for user input
-    if st.button("Get Classification"):
-        user_prediction = classifier(user_input)
-        st.write("User Input Prediction:")
-        st.write(f"Label: {user_prediction[0]['label']}")
-        st.write(f"Score: {user_prediction[0]['score']:.4f}")
+            # Display average sentiment scores
+            st.write("Average Sentiment Scores:")
+            st.write(f"Positive: {avg_positive_score:.4f}")
+            st.write(f"Negative: {avg_negative_score:.4f}")
+
+    # Perform sentiment analysis for user-entered text
+    if st.button("Analyze User Text"):
+        user_result = classifier(user_text_input)
+        st.write("User Input Analysis:")
+        st.write(f"Label: {user_result[0]['label']}")
+        st.write(f"Score: {user_result[0]['score']:.4f}")
 
 if __name__ == "__main__":
     main()
