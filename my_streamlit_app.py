@@ -38,11 +38,19 @@ def main():
 
             # Display overall results
             st.write("Overall Results:")
-            for i, prediction in enumerate(predictions):
-                st.write(f"Row {i + 1}:")
-                st.write(f"Label: {prediction[0]['label']}")
-                st.write(f"Score: {prediction[0]['score']:.4f}")
-                st.write("---")
+            avg_score = sum(prediction[0]['score'] for prediction in predictions) / len(predictions)
+            st.write(f"Average Sentiment Score: {avg_score:.4f}")
+            st.write("---")
+
+    # Input text area for user
+    user_input = st.text_area("Enter your text here:", "Type your text here...")
+
+    # Button to get sentiment prediction for user input
+    if st.button("Get Classification"):
+        user_prediction = classifier(user_input)
+        st.write("User Input Prediction:")
+        st.write(f"Label: {user_prediction[0]['label']}")
+        st.write(f"Score: {user_prediction[0]['score']:.4f}")
 
 if __name__ == "__main__":
     main()
