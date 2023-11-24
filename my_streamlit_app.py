@@ -1,34 +1,46 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from datasets import load_dataset
 import streamlit as st
+import pandas as pd
+from transformers import pipeline
 
-# Load the sentiment analysis model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("LiYuan/amazon-review-sentiment-analysis")
-model = AutoModelForSequenceClassification.from_pretrained("LiYuan/amazon-review-sentiment-analysis")
+# Load pre-trained text classification model (sentiment analysis)
+classifier = pipeline('sentiment-analysis')
 
-# Create a Streamlit web app
-st.title("Sentiment Analysis of Customer Reviews")
+# Streamlit web application
+def main():
+    st.title("Text Classification App")
 
-# Allow the user to upload a review file
-uploaded_file = st.file_uploader("Upload a review file", type=["txt"])
+    # Option to either input text or upload a file
+    option = st.radio("Choose input method:", ["Enter Text", "Upload File"])
 
-# Define sentiment labels
-sentiment_labels = {0: "Negative", 1: "Neutral", 2: "Positive"}
+    if option == "Enter Text":
+        # Input text area
+        text_input = st.text_area("Enter your text here:", "Type your text here...")
+        if st.button("Get Classification"):
+            # Make prediction
+            result = classifier(text_input)
 
-if uploaded_file is not None:
-    # Read the uploaded file
-    text = uploaded_file.read().decode("utf-8")
+            # Display result
+            st.write("Prediction:")
+            st.write(f"Label: {result[0]['label']}")
+            st.write(f"Score: {result[0]['score']:.4f}")
+    else:
+        # File upload
+        uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 
-    # Tokenize and classify sentiment
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    outputs = model(**inputs)
-    predicted_class = outputs.logits.argmax().item()
+        if uploaded_file is not None:
+            # Load the dataset
+            df = pd.read_csv(uploaded_file)
 
-    # Determine the sentiment
-    sentiment = sentiment_labels.get(predicted_class, "Unknown")
+            # Make predictions for each text in the dataset
+            predictions = [classifier(text) for text in df['text']]
 
-    # Display the sentiment and the original text
-    st.subheader("Sentiment Analysis Result")
-    st.write(f"Sentiment: {sentiment}")
-    st.subheader("Original Text")
-    st.write(text)
+            # Display overall results
+            st.write("Overall Results:")
+            for i, prediction in enumerate(predictions):
+                st.write(f"Row {i + 1}:")
+                st.write(f"Label: {prediction[0]['label']}")
+                st.write(f"Score: {prediction[0]['score']:.4f}")
+                st.write("---")
+
+if __name__ == "__main__":
+    main()
